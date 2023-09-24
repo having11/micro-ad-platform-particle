@@ -10,7 +10,6 @@
 #include <SPI.h>
 #include "Adafruit_mfGFX/Adafruit_mfGFX.h"
 #include "Adafruit_SSD1351_Photon.h"
-#include <AnimatedGIF.h>
 
 constexpr int BlockSize = 512;
 constexpr uint8_t CsPin = D18;
