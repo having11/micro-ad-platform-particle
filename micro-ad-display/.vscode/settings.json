@@ -2,6 +2,11 @@
     "extensions.ignoreRecommendations": true,
     "C_Cpp.default.configurationProvider": "particle.particle-vscode-core",
     "files.associations": {
-        "*.ino": "cpp"
-    }
+        "*.ino": "cpp",
+        "array": "cpp",
+        "tuple": "cpp"
+    },
+    "cmake.configureOnOpen": false,
+    "particle.firmwareVersion": "5.5.0",
+    "particle.targetPlatform": "p2"
 }

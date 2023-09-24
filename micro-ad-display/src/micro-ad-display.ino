@@ -5,10 +5,18 @@
  * Date: 24-09-2023
  */
 
+#include <Particle.h>
+
+void handleAssets(spark::Vector<ApplicationAsset> assets);
+
 void setup() {
-    
+    auto assets = System.assetsAvailable();
 }
 
 void loop() {
+
+}
+
+void handleAssets(spark::Vector<ApplicationAsset> assets) {
 
 }
