@@ -1,0 +1,3 @@
+[submodule "micro-ad-display/lib/AnimatedGIF"]
+	path = micro-ad-display/lib/AnimatedGIF
+	url = https://github.com/bitbank2/AnimatedGIF.git
