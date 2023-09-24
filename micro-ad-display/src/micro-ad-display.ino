@@ -10,6 +10,7 @@
 #include <SPI.h>
 #include "Adafruit_mfGFX/Adafruit_mfGFX.h"
 #include "Adafruit_SSD1351_Photon.h"
+#include "Bitmap.h"
 
 constexpr int BlockSize = 512;
 constexpr uint8_t CsPin = D18;
@@ -19,6 +20,7 @@ constexpr uint8_t RstPin = D14;
 void handleAssets(spark::Vector<ApplicationAsset> assets);
 
 Adafruit_SSD1351 tft = Adafruit_SSD1351(CsPin, DcPin, RstPin);
+Bitmap bitmap = Bitmap(&tft);
 SerialLogHandler logHandler(LOG_LEVEL_TRACE);
 
 void setup() {
@@ -26,10 +28,11 @@ void setup() {
     handleAssets(System.assetsAvailable());
 
     tft.begin();
+    tft.fillScreen(0);
 }
 
 void loop() {
-    // If ad.gif is present, display it
+    // If ad is present, display it
 
     // If the button has been pressed, show the QR code
 
