@@ -97,6 +97,15 @@ void handleButton() {
 }
 
 void handleAssets(spark::Vector<ApplicationAsset> assets) {
+    // Delete all previous ad files
+    loadAdFilenames();
+    for (auto& path : adFileNames) {
+        int result = unlink(path.c_str());
+        if (result != 0) {
+            // Error
+        }
+    }
+
     for (auto& asset : assets) {
         int size = (int)asset.size();
         String name = asset.name();
