@@ -115,7 +115,11 @@ class Adafruit_SSD1351  : public virtual Adafruit_GFX {
   void rawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
   void rawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
   template<typename T>
-  void swap(T &x, T &y);
+  void swap(T &x, T &y) {
+    T tmp = x;
+    x = y;
+    y = tmp;
+  }
 
   uint8_t _cs, _rs, _rst, _sid, _sclk;
 

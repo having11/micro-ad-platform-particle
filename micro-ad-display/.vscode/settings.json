@@ -8,5 +8,11 @@
     },
     "cmake.configureOnOpen": false,
     "particle.firmwareVersion": "5.5.0",
-    "particle.targetPlatform": "p2"
+    "particle.targetPlatform": "p2",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/lib"
+    ],
+    "C_Cpp.default.forcedInclude": [
+        "${workspaceFolder}/lib/AnimatedGIF/src/AnimatedGIF.h"
+    ]
 }
