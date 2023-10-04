@@ -35,27 +35,38 @@ void loadAdFilenames();
 
 Adafruit_SSD1351 tft = Adafruit_SSD1351(CsPin, DcPin, RstPin);
 Bitmap bitmap = Bitmap(&tft);
-SerialLogHandler logHandler(LOG_LEVEL_TRACE);
+SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
 void setup() {
+    Serial.begin(115200);
     waitFor(Serial.isConnected, 10000); delay(2000);
+
+    Log.info("Starting assets available=%d", System.assetsAvailable().size());
     handleAssets(System.assetsAvailable());
+    Log.info("end assets");
 
     tft.begin();
-    tft.fillScreen(0);
+    tft.fillCircle(60, 60, 20, 0x0ff0);
+    delay(2000);
+    tft.fillScreen(0xff00);
+    delay(2000);
 
     pinMode(ButtonPin, INPUT_PULLUP);
     attachInterrupt(ButtonPin, handleButton, FALLING);
     pinMode(PirPin, INPUT);
     attachInterrupt(PirPin, handlePir, RISING);
 
+    Log.info("Load filenames");
     loadAdFilenames();
 }
 
 void loop() {
     // If ad is present, display it
     if (millis() - lastAdDisplayMs >= AdSwitchDelayMs) {
-        bitmap.drawBitmap(adFileNames[currentAd++ % adFileNames.size()].c_str());
+        Log.info("draw bitmap start");
+        if (adFileNames.size() > 0) {
+            bitmap.drawBitmap(adFileNames[currentAd++ % adFileNames.size()].c_str());
+        }
         lastAdDisplayMs = millis();
     }
 
@@ -74,17 +85,24 @@ void loop() {
 }
 
 void loadAdFilenames() {
-    DIR* dir = opendir("ad");
+    struct stat statbuf;
+
+    DIR* dir = opendir("/");
+    Log.info("Opened dir=%d", errno);
     if (dir != NULL) {
         dirent *result = readdir(dir);
+        Log.info("got result %d", result->d_type);
         while (result) {
             if (result->d_type == DT_REG) {
-                adFileNames.push_back(String("ad/") + result->d_name);
+                adFileNames.push_back(result->d_name);
             }
+            Log.info("dir size=%d", adFileNames.size());
             result = readdir(dir);
+            Log.info("got result 2 = %d", (int32_t)result);
         }
 
         closedir(dir);
+        Log.info("Closed dir");
     }
 }
 
@@ -98,21 +116,29 @@ void handleButton() {
 
 void handleAssets(spark::Vector<ApplicationAsset> assets) {
     // Delete all previous ad files
+    Log.info("Load assets filename start");
     loadAdFilenames();
+    Log.info("load filenames done");
+    Log.info("assets length = %d", assets.size());
+    Log.info("ad file names length = %d", adFileNames.size());
     for (auto& path : adFileNames) {
         int result = unlink(path.c_str());
+        Log.info("unlinked %s", path.c_str());
         if (result != 0) {
             // Error
+            Log.info("result=%d", result);
         }
     }
 
     for (auto& asset : assets) {
         int size = (int)asset.size();
         String name = asset.name();
-        if (name.startsWith("ad/") || name == "qrcode.bmp") {
+        Log.info("Found asset %s", name.c_str());
+        if (name.startsWith("ad") || name == "qrcode.bmp") {
             uint8_t buf[BlockSize];
             int32_t bytesRead = 0;
             int fd = open(name, O_WRONLY | O_CREAT | O_TRUNC);
+            Log.info("Got fd=%d", fd);
             if (fd != -1) {
                 while (bytesRead < size) {
                     int toRead = constrain(size - bytesRead, 0, sizeof(buf));
@@ -126,6 +152,7 @@ void handleAssets(spark::Vector<ApplicationAsset> assets) {
                 }
 
                 close(fd);
+                Log.info("Closed fd=%d", fd);
             }
         }
     }

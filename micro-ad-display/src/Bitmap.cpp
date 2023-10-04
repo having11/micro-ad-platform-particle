@@ -8,11 +8,16 @@ void Bitmap::drawBitmap(const char* filename) {
     uint8_t  sdbuffer[3 * BUF_SIZE]; // pixel buffer (R+G+B per pixel)
     uint8_t  buffidx = sizeof(sdbuffer); // Current position in sdbuffer
 
+    Log.info("filename = %s", filename);
     int fd = open(filename, O_RDONLY);
+    Log.info("file open errno=%d", errno);
     if (fd == -1) {
+        Log.error("ERROR");
         // error
         return;
     }
+
+    delay(4000);
 
     // Parse BMP header
     if (read16(fd) == 0x4D42) { // BMP signature
@@ -89,11 +94,13 @@ void Bitmap::drawBitmap(const char* filename) {
 uint16_t Bitmap::read16(int fd) {
   uint16_t result;
   int count = read(fd, &result, sizeof(result));
+  Log.info("read16 count=%d", count);
   return result;
 }
 
 uint32_t Bitmap::read32(int fd) {
   uint32_t result;
   int count = read(fd, &result, sizeof(result));
+  Log.info("read32 count=%d", count);
   return result;
 }
