@@ -43,7 +43,6 @@ void setup() {
 
     Log.info("Starting assets available=%d", System.assetsAvailable().size());
     handleAssets(System.assetsAvailable());
-    Log.info("end assets");
 
     tft.begin();
     tft.fillCircle(60, 60, 20, 0x0ff0);
@@ -56,7 +55,6 @@ void setup() {
     pinMode(PirPin, INPUT);
     attachInterrupt(PirPin, handlePir, RISING);
 
-    Log.info("Load filenames");
     loadAdFilenames();
 }
 
@@ -91,14 +89,11 @@ void loadAdFilenames() {
     Log.info("Opened dir=%d", errno);
     if (dir != NULL) {
         dirent *result = readdir(dir);
-        Log.info("got result %d", result->d_type);
         while (result) {
             if (result->d_type == DT_REG) {
                 adFileNames.push_back(result->d_name);
             }
-            Log.info("dir size=%d", adFileNames.size());
             result = readdir(dir);
-            Log.info("got result 2 = %d", (int32_t)result);
         }
 
         closedir(dir);
@@ -116,17 +111,12 @@ void handleButton() {
 
 void handleAssets(spark::Vector<ApplicationAsset> assets) {
     // Delete all previous ad files
-    Log.info("Load assets filename start");
     loadAdFilenames();
-    Log.info("load filenames done");
-    Log.info("assets length = %d", assets.size());
     Log.info("ad file names length = %d", adFileNames.size());
     for (auto& path : adFileNames) {
         int result = unlink(path.c_str());
-        Log.info("unlinked %s", path.c_str());
         if (result != 0) {
             // Error
-            Log.info("result=%d", result);
         }
     }
 

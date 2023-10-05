@@ -94,13 +94,11 @@ void Bitmap::drawBitmap(const char* filename) {
 uint16_t Bitmap::read16(int fd) {
   uint16_t result;
   int count = read(fd, &result, sizeof(result));
-  Log.info("read16 count=%d", count);
   return result;
 }
 
 uint32_t Bitmap::read32(int fd) {
   uint32_t result;
   int count = read(fd, &result, sizeof(result));
-  Log.info("read32 count=%d", count);
   return result;
 }

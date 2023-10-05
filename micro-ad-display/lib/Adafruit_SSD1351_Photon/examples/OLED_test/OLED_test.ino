@@ -30,11 +30,9 @@
  ****************************************************/
 
 // You can use any 5 pins; see note below about hardware vs software SPI
-#define cs   A2
-#define sclk A3
-#define mosi A5
-#define rst  D5
-#define dc   D6
+#define cs   D18
+#define rst  D14
+#define dc   D19
 
 // Color definitions
 #define	BLACK           0x0000

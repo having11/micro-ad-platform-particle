@@ -349,6 +349,7 @@ void Adafruit_SSD1351::begin(void) {
     // Toggle RST low to reset; CS low so it'll listen to us
     pinMode(_cs, OUTPUT);
     digitalWrite(_cs, LOW);
+    
 
     if (_rst) {
         pinMode(_rst, OUTPUT);
