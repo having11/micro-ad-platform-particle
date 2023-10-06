@@ -85,12 +85,15 @@ void loop() {
 
     // If the button has been pressed, show the QR code
     if (buttonPress) {
+        buttonPress = false;
+        detachInterrupt(ButtonPin);
         digitalWrite(ButtonLedPin, LOW);
         Particle.publish("AD_BUTTON_PRESS");
         bitmap.drawBitmap("qrcode.bmp");
 
-        delay(6000);
+        delay(10000);
         digitalWrite(ButtonLedPin, HIGH);
+        attachInterrupt(ButtonPin, handleButton, FALLING);
     }
 
     distanceSensor.startRanging();
