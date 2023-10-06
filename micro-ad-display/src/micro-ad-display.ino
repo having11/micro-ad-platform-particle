@@ -9,8 +9,10 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <SPI.h>
+#include <Wire.h>
 #include "Adafruit_mfGFX/Adafruit_mfGFX.h"
 #include "Adafruit_SSD1351_Photon.h"
+#include "SparkFun_VL53L1X.h"
 #include "Bitmap.h"
 #include <vector>
 
@@ -19,21 +21,25 @@ constexpr uint8_t CsPin = D18;
 constexpr uint8_t DcPin = D19;
 constexpr uint8_t RstPin = D14;
 constexpr uint8_t ButtonPin = D4;
-constexpr uint8_t PirPin = D5;
+constexpr uint8_t ButtonLedPin = D5;
 constexpr uint16_t AdSwitchDelayMs = 4000;
+// Only show an ad at most every 6 seconds
+constexpr uint32_t ImpressionDelayMs = 6000;
+constexpr int ImpressionDistanceThresholdMM = 500;
 
 uint8_t currentAd = 0;
 uint32_t lastAdDisplayMs = 0;
+uint32_t lastImpressionMs = 0;
 static std::vector<String> adFileNames;
 volatile bool pirTriggered = false;
 volatile bool buttonPress = false;
 
 void handleAssets(spark::Vector<ApplicationAsset> assets);
-void handlePir();
 void handleButton();
 void loadAdFilenames();
 
 Adafruit_SSD1351 tft = Adafruit_SSD1351(CsPin, DcPin, RstPin);
+SFEVL53L1X distanceSensor;
 Bitmap bitmap = Bitmap(&tft);
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
@@ -45,15 +51,24 @@ void setup() {
     handleAssets(System.assetsAvailable());
 
     tft.begin();
+    tft.fillScreen(0);
     tft.fillCircle(60, 60, 20, 0x0ff0);
-    delay(2000);
+    delay(1000);
     tft.fillScreen(0xff00);
-    delay(2000);
+    delay(1000);
+
+    Wire.begin();
+
+    if (distanceSensor.begin() != 0) {
+        Log.error("VL53L1X failed to init");
+    }
+
+    distanceSensor.setDistanceModeLong();
 
     pinMode(ButtonPin, INPUT_PULLUP);
     attachInterrupt(ButtonPin, handleButton, FALLING);
-    pinMode(PirPin, INPUT);
-    attachInterrupt(PirPin, handlePir, RISING);
+    pinMode(ButtonLedPin, OUTPUT);
+    digitalWrite(ButtonLedPin, HIGH);
 
     loadAdFilenames();
 }
@@ -61,8 +76,8 @@ void setup() {
 void loop() {
     // If ad is present, display it
     if (millis() - lastAdDisplayMs >= AdSwitchDelayMs) {
-        Log.info("draw bitmap start");
         if (adFileNames.size() > 0) {
+            Log.info("draw bitmap start");
             bitmap.drawBitmap(adFileNames[currentAd++ % adFileNames.size()].c_str());
         }
         lastAdDisplayMs = millis();
@@ -70,14 +85,29 @@ void loop() {
 
     // If the button has been pressed, show the QR code
     if (buttonPress) {
+        digitalWrite(ButtonLedPin, LOW);
         Particle.publish("AD_BUTTON_PRESS");
         bitmap.drawBitmap("qrcode.bmp");
 
         delay(6000);
+        digitalWrite(ButtonLedPin, HIGH);
     }
 
-    // Check PIR for proximity
-    if (pirTriggered) {
+    distanceSensor.startRanging();
+
+    while (!distanceSensor.checkForDataReady()) {
+        delay (1);
+    }
+    int distance = distanceSensor.getDistance();
+    distanceSensor.clearInterrupt();
+    distanceSensor.stopRanging();
+
+    Log.info("Distance (mm) = %d", distance);
+
+    // Check lidar for proximity
+    if (distance <= ImpressionDistanceThresholdMM &&
+        millis() - lastAdDisplayMs >= ImpressionDelayMs) {
+        lastAdDisplayMs = millis();
         Particle.publish("AD_IMPRESSION");
     }
 }
@@ -99,10 +129,6 @@ void loadAdFilenames() {
         closedir(dir);
         Log.info("Closed dir");
     }
-}
-
-void handlePir() {
-    pirTriggered = true;
 }
 
 void handleButton() {
