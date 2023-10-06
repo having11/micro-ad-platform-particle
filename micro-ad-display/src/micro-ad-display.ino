@@ -106,8 +106,9 @@ void loop() {
 
     // Check lidar for proximity
     if (distance <= ImpressionDistanceThresholdMM &&
-        millis() - lastAdDisplayMs >= ImpressionDelayMs) {
-        lastAdDisplayMs = millis();
+        millis() - lastImpressionMs >= ImpressionDelayMs) {
+        Log.info("Sending ad impression");
+        lastImpressionMs = millis();
         Particle.publish("AD_IMPRESSION");
     }
 }
