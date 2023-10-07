@@ -31,11 +31,9 @@ uint8_t currentAd = 0;
 uint32_t lastAdDisplayMs = 0;
 uint32_t lastImpressionMs = 0;
 static std::vector<String> adFileNames;
-volatile bool pirTriggered = false;
 volatile bool buttonPress = false;
 
 void handleAssets(spark::Vector<ApplicationAsset> assets);
-void handleButton();
 void loadAdFilenames();
 
 Adafruit_SSD1351 tft = Adafruit_SSD1351(CsPin, DcPin, RstPin);
@@ -66,7 +64,6 @@ void setup() {
     distanceSensor.setDistanceModeLong();
 
     pinMode(ButtonPin, INPUT_PULLUP);
-    attachInterrupt(ButtonPin, handleButton, FALLING);
     pinMode(ButtonLedPin, OUTPUT);
     digitalWrite(ButtonLedPin, HIGH);
 
@@ -84,16 +81,13 @@ void loop() {
     }
 
     // If the button has been pressed, show the QR code
-    if (buttonPress) {
-        buttonPress = false;
-        detachInterrupt(ButtonPin);
+    if (!digitalRead(ButtonPin)) {
         digitalWrite(ButtonLedPin, LOW);
         Particle.publish("AD_BUTTON_PRESS");
         bitmap.drawBitmap("qrcode.bmp");
 
         delay(10000);
         digitalWrite(ButtonLedPin, HIGH);
-        attachInterrupt(ButtonPin, handleButton, FALLING);
     }
 
     distanceSensor.startRanging();
@@ -133,10 +127,6 @@ void loadAdFilenames() {
         closedir(dir);
         Log.info("Closed dir");
     }
-}
-
-void handleButton() {
-    buttonPress = true;
 }
 
 void handleAssets(spark::Vector<ApplicationAsset> assets) {

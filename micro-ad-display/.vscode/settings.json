@@ -14,5 +14,6 @@
     ],
     "C_Cpp.default.forcedInclude": [
         "${workspaceFolder}/lib/AnimatedGIF/src/AnimatedGIF.h"
-    ]
+    ],
+    "particle.targetDevice": "photon2_1"
 }
